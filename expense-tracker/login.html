@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In | SpendWise Expense Tracker</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+
+  <!-- Immediate Authentication Check (Prevents showing login if already logged in) -->
+  <script>
+    (function () {
+      const currentUser = localStorage.getItem("spendwise_current_user");
+      if (currentUser) {
+        window.location.replace("index.html");
+      }
+    })();
+  </script>
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/login.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <div class="auth-wrapper">
+    <div class="auth-container">
+
+      <!-- Login Card -->
+      <div class="auth-card">
+
+        <!-- Card Header -->
+        <div class="auth-header">
+          <a href="login.html" class="auth-brand">
+            <img src="assets/images/logo.svg" alt="SpendWise Logo" class="brand-icon">
+            <span>SpendWise</span>
+            <span class="brand-badge">Tracker</span>
+          </a>
+          <h1 class="auth-title">Welcome Back</h1>
+          <p class="auth-subtitle">Sign in to your SpendWise account to manage your personal finances.</p>
+        </div>
+
+        <!-- Success Alert (e.g., after registering or logging out) -->
+        <div id="auth-success" class="auth-alert auth-alert-success" style="display: none;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span id="auth-success-text">Account created successfully! Please sign in below.</span>
+        </div>
+
+        <!-- Error Alert (Invalid credentials, etc.) -->
+        <div id="auth-error" class="auth-alert auth-alert-danger" style="display: none;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span id="auth-error-text">Invalid email or password.</span>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" novalidate>
+
+          <!-- Email Field -->
+          <div class="form-group">
+            <label for="login-email" class="form-label">
+              Email Address <span class="required">*</span>
+            </label>
+            <div class="input-with-icon">
+              <span class="input-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </span>
+              <input
+                type="email"
+                id="login-email"
+                class="form-control"
+                placeholder="name@example.com"
+                required
+                autocomplete="email"
+              >
+            </div>
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <label for="login-password" class="form-label">
+              Password <span class="required">*</span>
+            </label>
+            <div class="input-with-icon input-password-wrapper">
+              <span class="input-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </span>
+              <input
+                type="password"
+                id="login-password"
+                class="form-control"
+                placeholder="Enter your password"
+                required
+                autocomplete="current-password"
+              >
+              <button
+                type="button"
+                id="toggle-login-password"
+                class="btn-toggle-password"
+                aria-label="Toggle password visibility"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="login-submit-btn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+            <span>Sign In</span>
+          </button>
+
+        </form>
+
+        <!-- Demo Account Shortcut Box -->
+        <div class="demo-account-box">
+          <div class="demo-account-header">Quick Demo Account</div>
+          <div class="demo-credentials">
+            Email: <code>demo@spendwise.com</code><br>
+            Password: <code>password123</code>
+          </div>
+          <button type="button" id="btn-fill-demo" class="btn-fill-demo">
+            Auto-Fill Demo Credentials
+          </button>
+        </div>
+
+        <!-- Auth Footer Link -->
+        <div class="auth-footer">
+          Don't have an account? <a href="register.html">Create one now &rarr;</a>
+        </div>
+
+      </div>
+
+      <!-- Page Bottom Info -->
+      <div class="auth-page-footer">
+        <strong>SpendWise</strong> &mdash; All user credentials securely managed in LocalStorage.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Login JavaScript -->
+  <script src="js/login.js"></script>
+</body>
+</html>

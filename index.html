@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SpendWise - Expense Tracker</title>
+  <script>
+    (function() {
+      var currentUser = localStorage.getItem("spendwise_current_user");
+      if (currentUser) {
+        window.location.replace("expense-tracker/index.html");
+      } else {
+        window.location.replace("expense-tracker/login.html");
+      }
+    })();
+  </script>
+  <meta http-equiv="refresh" content="0; url=expense-tracker/login.html">
+</head>
+<body style="font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8fafc;">
+  <p>Redirecting to <a href="expense-tracker/login.html" style="color: #4f46e5; font-weight: 600;">SpendWise Application</a>...</p>
+</body>
+</html>

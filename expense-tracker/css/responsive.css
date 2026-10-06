@@ -1,0 +1,229 @@
+/* ==========================================================================
+   SpendWise - Modern Expense Tracker
+   File: responsive.css (Responsive & Mobile Styles)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Large Tablets & Small Laptops (Max Width: 1024px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. Tablets & Landscape Phones (Max Width: 768px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .navbar .container {
+    height: auto;
+    padding-top: 0.875rem;
+    padding-bottom: 0.875rem;
+    flex-wrap: wrap;
+    gap: 0.875rem;
+  }
+
+  .nav-menu {
+    width: 100%;
+    order: 3;
+    justify-content: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.75rem;
+  }
+
+  .nav-link {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .page-title-group h1 {
+    font-size: 1.5rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-toolbar-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-search-box {
+    width: 100%;
+  }
+
+  .filter-controls-group {
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .filter-tabs {
+    width: 100%;
+  }
+
+  .filter-tab-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .filter-select {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  /* Table adjustments on tablet */
+  .data-table th,
+  .data-table td {
+    padding: 0.75rem 0.875rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. Mobile Phones (Max Width: 576px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 576px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+
+  .metric-card {
+    padding: 1.25rem;
+  }
+
+  .metric-card-value {
+    font-size: 1.625rem;
+  }
+
+  .card-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .card-body {
+    padding: 1.25rem;
+  }
+
+  .modal-dialog {
+    margin: 0.5rem;
+    max-height: 90vh;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 1rem 1.25rem;
+  }
+
+  .type-toggle-btn {
+    padding: 0.45rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Mobile Transaction Card View for Table */
+  /* On very small screens, convert table rows into mobile cards */
+  .mobile-table-card-view thead {
+    display: none;
+  }
+
+  .mobile-table-card-view,
+  .mobile-table-card-view tbody,
+  .mobile-table-card-view tr,
+  .mobile-table-card-view td {
+    display: block;
+    width: 100%;
+  }
+
+  .mobile-table-card-view tr {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.75rem;
+    padding: 1rem;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .mobile-table-card-view td {
+    padding: 0.35rem 0;
+    border-bottom: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+  }
+
+  .mobile-table-card-view td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .mobile-table-card-view td.col-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .mobile-table-card-view td.col-title::before {
+    display: none;
+  }
+
+  .mobile-table-card-view td.col-actions {
+    border-top: 1px dashed var(--border-color);
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  .mobile-table-card-view td.col-actions::before {
+    display: none;
+  }
+
+  .toast-container {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+  }
+
+  .toast {
+    max-width: 100%;
+  }
+
+  .footer .container {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+}
