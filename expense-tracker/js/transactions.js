@@ -1,15 +1,6 @@
-// SpendWise - Transactions JavaScript
-// Features:
-// User Authentication & Protection
-// User-Wise Transactions (Add, Edit, Delete)
-// Search, Filter, Sort
-// Multi-User LocalStorage Persistence
-
 const STORAGE_KEY = "spendwise_transactions";
 const USERS_STORAGE_KEY = "spendwise_users";
 const CURRENT_USER_KEY = "spendwise_current_user";
-
-// -------------------- Categories --------------------
 
 const categories = {
   income: [
@@ -36,8 +27,6 @@ const categories = {
   ]
 };
 
-// -------------------- Variables --------------------
-
 let searchText = "";
 let selectedType = "all";
 let selectedCategory = "all";
@@ -45,8 +34,6 @@ let selectedSort = "date-desc";
 
 let editId = null;
 let addType = "expense";
-
-// -------------------- HTML Elements --------------------
 
 const searchInput = document.getElementById("search-input");
 const clearSearchButton = document.getElementById("clear-search-btn");
@@ -62,7 +49,6 @@ const emptyMessage = document.getElementById("empty-transactions-state");
 const countText = document.getElementById("tx-count-summary");
 const totalText = document.getElementById("filtered-total-amount");
 
-// Edit Elements
 const editModal = document.getElementById("edit-modal");
 const editForm = document.getElementById("edit-transaction-form");
 
@@ -77,7 +63,6 @@ const editNotes = document.getElementById("edit-tx-notes");
 const closeEditButton = document.getElementById("close-edit-modal");
 const cancelEditButton = document.getElementById("cancel-edit-btn");
 
-// Add Elements
 const addButton = document.getElementById("open-add-modal-btn");
 const addModal = document.getElementById("add-modal");
 const addForm = document.getElementById("add-transaction-form");
@@ -95,12 +80,9 @@ const cancelAddButton = document.getElementById("cancel-add-btn");
 
 const toastBox = document.getElementById("toast-container");
 
-// Navbar Elements
 const navUserName = document.getElementById("nav-user-name");
 const navUserAvatar = document.getElementById("user-avatar");
 const logoutBtn = document.getElementById("logout-btn");
-
-// -------------------- AUTHENTICATION --------------------
 
 function getCurrentUserId() {
   return localStorage.getItem(CURRENT_USER_KEY);
@@ -119,9 +101,12 @@ function getCurrentUser() {
 
   try {
     const users = JSON.parse(usersData);
-    return users.find(function(user) {
-      return String(user.id) === String(currentUserId);
-    }) || null;
+    for (let i = 0; i < users.length; i++) {
+      if (String(users[i].id) === String(currentUserId)) {
+        return users[i];
+      }
+    }
+    return null;
   } catch {
     return null;
   }
@@ -154,8 +139,6 @@ function handleLogout() {
   window.location.href = "../login.html?logout=true";
 }
 
-// -------------------- LocalStorage (Multi-User) --------------------
-
 // Get ALL transactions across all users from LocalStorage
 function getAllTransactions() {
   const data = localStorage.getItem(STORAGE_KEY);
@@ -163,15 +146,28 @@ function getAllTransactions() {
     return [];
   }
   try {
-    return JSON.parse(data) || [];
-  } catch {
+    const transactions = JSON.parse(data);
+    if (Array.isArray(transactions)) {
+      return transactions;
+    }
+    throw new Error("Saved transactions are not a list.");
+  } catch (error) {
+    console.error("Could not read saved transactions:", error);
+    showMessage("Could not read saved transactions.", "danger");
     return [];
   }
 }
 
 // Save ALL transactions to LocalStorage
 function saveAllTransactions(transactions) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+    return true;
+  } catch (error) {
+    console.error("Could not save transactions:", error);
+    showMessage("Could not save transactions to this browser.", "danger");
+    return false;
+  }
 }
 
 // Get ONLY current user's transactions
@@ -182,14 +178,15 @@ function getUserTransactions() {
   }
 
   const all = getAllTransactions();
-  return all.filter(function(tx) {
-    return String(tx.userId) === String(currentUserId);
-  });
+  const userTransactions = [];
+  for (let i = 0; i < all.length; i++) {
+    if (String(all[i].userId) === String(currentUserId)) {
+      userTransactions.push(all[i]);
+    }
+  }
+  return userTransactions;
 }
 
-// -------------------- Helper Functions --------------------
-
-// Today's date
 function today() {
   const date = new Date();
   const year = date.getFullYear();
@@ -198,12 +195,10 @@ function today() {
   return `${year}-${month}-${day}`;
 }
 
-// Create ID
 function makeId() {
   return "tx_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
 }
 
-// Format money
 function money(amount) {
   return "$" + Number(amount || 0).toLocaleString("en-US", {
     minimumFractionDigits: 2,
@@ -211,7 +206,6 @@ function money(amount) {
   });
 }
 
-// Format date
 function showDate(date) {
   if (!date) return "";
   const parts = date.split("-");
@@ -225,7 +219,6 @@ function showDate(date) {
   });
 }
 
-// Show message
 function showMessage(message, type = "success") {
   if (!toastBox) return;
 
@@ -240,14 +233,12 @@ function showMessage(message, type = "success") {
   }, 3000);
 }
 
-// -------------------- Category Functions --------------------
-
-// Fill category dropdown
 function fillCategories(select, type, selected = "") {
   if (!select) return;
   select.innerHTML = "";
 
-  categories[type].forEach(function(category) {
+  for (let i = 0; i < categories[type].length; i++) {
+    const category = categories[type][i];
     const option = document.createElement("option");
     option.value = category;
     option.textContent = category;
@@ -255,76 +246,66 @@ function fillCategories(select, type, selected = "") {
       option.selected = true;
     }
     select.appendChild(option);
-  });
+  }
 }
 
-// Fill filter dropdown
 function fillFilterCategories() {
   if (!categoryFilter) return;
 
   categoryFilter.innerHTML = '<option value="all">All Categories</option>';
 
-  // Income
   const incomeGroup = document.createElement("optgroup");
   incomeGroup.label = "Income Categories";
-  categories.income.forEach(function(category) {
+  for (let i = 0; i < categories.income.length; i++) {
+    const category = categories.income[i];
     const option = document.createElement("option");
     option.value = category;
     option.textContent = category;
     incomeGroup.appendChild(option);
-  });
+  }
 
-  // Expense
   const expenseGroup = document.createElement("optgroup");
   expenseGroup.label = "Expense Categories";
-  categories.expense.forEach(function(category) {
+  for (let i = 0; i < categories.expense.length; i++) {
+    const category = categories.expense[i];
     const option = document.createElement("option");
     option.value = category;
     option.textContent = category;
     expenseGroup.appendChild(option);
-  });
+  }
 
   categoryFilter.appendChild(incomeGroup);
   categoryFilter.appendChild(expenseGroup);
 }
 
-// -------------------- Search / Filter / Sort --------------------
-
+// Returns the current user's transactions that match the selected search and filters.
 function getFilteredTransactions() {
   // Always begin with ONLY the logged-in user's transactions
-  let transactions = getUserTransactions();
+  const userTransactions = getUserTransactions();
+  const transactions = [];
+  const search = searchText.trim().toLowerCase();
 
-  // Search
-  if (searchText.trim() !== "") {
-    const search = searchText.toLowerCase().trim();
-    transactions = transactions.filter(function(transaction) {
-      const title = (transaction.title || "").toLowerCase();
-      const notes = (transaction.notes || "").toLowerCase();
-      const category = (transaction.category || "").toLowerCase();
+  for (let i = 0; i < userTransactions.length; i++) {
+    const transaction = userTransactions[i];
+    const title = (transaction.title || "").toLowerCase();
+    const notes = (transaction.notes || "").toLowerCase();
+    const category = (transaction.category || "").toLowerCase();
 
-      return (
-        title.includes(search) ||
-        notes.includes(search) ||
-        category.includes(search)
-      );
-    });
+    if (search && !title.includes(search)
+      && !notes.includes(search)
+      && !category.includes(search)) {
+      continue;
+    }
+    if (selectedType !== "all" && transaction.type !== selectedType) {
+      continue;
+    }
+    if (selectedCategory !== "all"
+      && transaction.category !== selectedCategory) {
+      continue;
+    }
+    transactions.push(transaction);
   }
 
-  // Income / Expense
-  if (selectedType !== "all") {
-    transactions = transactions.filter(function(transaction) {
-      return transaction.type === selectedType;
-    });
-  }
-
-  // Category
-  if (selectedCategory !== "all") {
-    transactions = transactions.filter(function(transaction) {
-      return transaction.category === selectedCategory;
-    });
-  }
-
-  // Sort
   transactions.sort(function(a, b) {
     if (selectedSort === "date-asc") {
       return new Date(a.date) - new Date(b.date);
@@ -338,34 +319,30 @@ function getFilteredTransactions() {
       return Number(a.amount) - Number(b.amount);
     }
 
-    // Default: newest first
     return new Date(b.date) - new Date(a.date);
   });
 
   return transactions;
 }
 
-// -------------------- Display Transactions --------------------
-
 function displayTransactions() {
   const userAllTransactions = getUserTransactions();
   const transactions = getFilteredTransactions();
 
-  // Count
   if (countText) {
     countText.textContent = `Showing ${transactions.length} of ${userAllTransactions.length} transactions`;
   }
 
-  // Total
   let total = 0;
-  transactions.forEach(function(transaction) {
+  for (let i = 0; i < transactions.length; i++) {
+    const transaction = transactions[i];
     const amount = Number(transaction.amount) || 0;
     if (transaction.type === "income") {
       total += amount;
     } else {
       total -= amount;
     }
-  });
+  }
 
   if (totalText) {
     if (total >= 0) {
@@ -377,7 +354,6 @@ function displayTransactions() {
     }
   }
 
-  // No data
   if (transactions.length === 0) {
     if (tableBody) {
       tableBody.innerHTML = "";
@@ -396,8 +372,8 @@ function displayTransactions() {
 
   tableBody.innerHTML = "";
 
-  // Display every transaction
-  transactions.forEach(function(transaction) {
+  for (let i = 0; i < transactions.length; i++) {
+    const transaction = transactions[i];
     const row = document.createElement("tr");
 
     const income = transaction.type === "income";
@@ -453,10 +429,8 @@ function displayTransactions() {
     `;
 
     tableBody.appendChild(row);
-  });
+  }
 }
-
-// -------------------- ADD TRANSACTION --------------------
 
 function openAddModal() {
   if (!addModal) return;
@@ -483,13 +457,14 @@ function closeAddModal() {
 function setAddType(type) {
   addType = type;
 
-  addTypeButtons.forEach(function(button) {
+  for (let i = 0; i < addTypeButtons.length; i++) {
+    const button = addTypeButtons[i];
     if (button.dataset.type === type) {
       button.classList.add("active");
     } else {
       button.classList.remove("active");
     }
-  });
+  }
 
   fillCategories(addCategory, type);
 }
@@ -509,14 +484,12 @@ function addTransaction(event) {
   const date = addDate.value || today();
   const notes = addNotes ? addNotes.value.trim() : "";
 
-  // Title validation
   if (title === "") {
     showMessage("Please enter a title.", "danger");
     addTitle.focus();
     return;
   }
 
-  // Amount validation
   if (amount <= 0 || isNaN(amount)) {
     showMessage("Please enter a valid amount.", "danger");
     addAmount.focus();
@@ -537,7 +510,7 @@ function addTransaction(event) {
 
   const allTransactions = getAllTransactions();
   allTransactions.unshift(newTransaction);
-  saveAllTransactions(allTransactions);
+  if (!saveAllTransactions(allTransactions)) return;
 
   closeAddModal();
   displayTransactions();
@@ -545,15 +518,18 @@ function addTransaction(event) {
   showMessage("Transaction added successfully!");
 }
 
-// -------------------- EDIT TRANSACTION --------------------
-
 function openEditModal(id) {
   const currentUserId = getCurrentUserId();
   const userTransactions = getUserTransactions();
 
-  const transaction = userTransactions.find(function(item) {
-    return item.id === id && String(item.userId) === String(currentUserId);
-  });
+  let transaction = null;
+  for (let i = 0; i < userTransactions.length; i++) {
+    if (userTransactions[i].id === id
+      && String(userTransactions[i].userId) === String(currentUserId)) {
+      transaction = userTransactions[i];
+      break;
+    }
+  }
 
   if (!transaction) {
     showMessage("Transaction not found or unauthorized.", "danger");
@@ -570,9 +546,10 @@ function openEditModal(id) {
     editNotes.value = transaction.notes || "";
   }
 
-  editType.forEach(function(radio) {
+  for (let i = 0; i < editType.length; i++) {
+    const radio = editType[i];
     radio.checked = radio.value === transaction.type;
-  });
+  }
 
   fillCategories(editCategory, transaction.type, transaction.category);
 
@@ -601,11 +578,12 @@ function saveEdit(event) {
   const amount = Number(editAmount.value);
 
   let type = "expense";
-  editType.forEach(function(radio) {
+  for (let i = 0; i < editType.length; i++) {
+    const radio = editType[i];
     if (radio.checked) {
       type = radio.value;
     }
-  });
+  }
 
   const category = editCategory.value;
   const date = editDate.value || today();
@@ -622,9 +600,14 @@ function saveEdit(event) {
   }
 
   const allTransactions = getAllTransactions();
-  const index = allTransactions.findIndex(function(transaction) {
-    return transaction.id === editId && String(transaction.userId) === String(currentUserId);
-  });
+  let index = -1;
+  for (let i = 0; i < allTransactions.length; i++) {
+    if (allTransactions[i].id === editId
+      && String(allTransactions[i].userId) === String(currentUserId)) {
+      index = i;
+      break;
+    }
+  }
 
   if (index === -1) {
     showMessage("Transaction not found or unauthorized.", "danger");
@@ -638,7 +621,7 @@ function saveEdit(event) {
   allTransactions[index].date = date;
   allTransactions[index].notes = notes;
 
-  saveAllTransactions(allTransactions);
+  if (!saveAllTransactions(allTransactions)) return;
 
   closeEditModal();
   displayTransactions();
@@ -646,15 +629,18 @@ function saveEdit(event) {
   showMessage("Transaction updated successfully!");
 }
 
-// -------------------- DELETE --------------------
-
 function deleteTransaction(id) {
   const currentUserId = getCurrentUserId();
   const userTransactions = getUserTransactions();
 
-  const transaction = userTransactions.find(function(item) {
-    return item.id === id && String(item.userId) === String(currentUserId);
-  });
+  let transaction = null;
+  for (let i = 0; i < userTransactions.length; i++) {
+    if (userTransactions[i].id === id
+      && String(userTransactions[i].userId) === String(currentUserId)) {
+      transaction = userTransactions[i];
+      break;
+    }
+  }
 
   if (!transaction) {
     showMessage("Transaction not found or unauthorized.", "danger");
@@ -665,19 +651,21 @@ function deleteTransaction(id) {
   if (!answer) return;
 
   const allTransactions = getAllTransactions();
-  const newTransactions = allTransactions.filter(function(item) {
-    return !(item.id === id && String(item.userId) === String(currentUserId));
-  });
+  const newTransactions = [];
+  for (let i = 0; i < allTransactions.length; i++) {
+    const belongsToUser = String(allTransactions[i].userId) === String(currentUserId);
+    if (allTransactions[i].id !== id || !belongsToUser) {
+      newTransactions.push(allTransactions[i]);
+    }
+  }
 
-  saveAllTransactions(newTransactions);
+  if (!saveAllTransactions(newTransactions)) return;
 
   displayTransactions();
   showMessage("Transaction deleted.", "danger");
 }
 
 window.deleteTransaction = deleteTransaction;
-
-// -------------------- RESET FILTERS --------------------
 
 function resetFilters() {
   searchText = "";
@@ -690,35 +678,31 @@ function resetFilters() {
   if (categoryFilter) categoryFilter.value = "all";
   if (sortFilter) sortFilter.value = "date-desc";
 
-  typeButtons.forEach(function(button) {
+  for (let i = 0; i < typeButtons.length; i++) {
+    const button = typeButtons[i];
     if (button.dataset.type === "all") {
       button.classList.add("active");
     } else {
       button.classList.remove("active");
     }
-  });
+  }
 
   displayTransactions();
   showMessage("Filters reset.", "info");
 }
 
-// -------------------- PAGE START --------------------
-
 document.addEventListener("DOMContentLoaded", function() {
-  // Authentication Guard
+
   const user = checkAuth();
   if (!user) return;
 
-  // Navbar user profile & logout
   updateNavbar(user);
   if (logoutBtn) {
     logoutBtn.addEventListener("click", handleLogout);
   }
 
-  // Category dropdown
   fillFilterCategories();
 
-  // Search
   if (searchInput) {
     searchInput.addEventListener("input", function() {
       searchText = searchInput.value;
@@ -729,7 +713,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Clear Search
   if (clearSearchButton) {
     clearSearchButton.addEventListener("click", function() {
       searchInput.value = "";
@@ -739,19 +722,19 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // All / Income / Expense tabs
-  typeButtons.forEach(function(button) {
+  for (let i = 0; i < typeButtons.length; i++) {
+    const button = typeButtons[i];
     button.addEventListener("click", function() {
-      typeButtons.forEach(function(item) {
+      for (let j = 0; j < typeButtons.length; j++) {
+        const item = typeButtons[j];
         item.classList.remove("active");
-      });
+      }
       button.classList.add("active");
       selectedType = button.dataset.type;
       displayTransactions();
     });
-  });
+  }
 
-  // Category Filter
   if (categoryFilter) {
     categoryFilter.addEventListener("change", function() {
       selectedCategory = categoryFilter.value;
@@ -759,7 +742,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Sort
   if (sortFilter) {
     sortFilter.addEventListener("change", function() {
       selectedSort = sortFilter.value;
@@ -767,17 +749,14 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Reset
   if (resetButton) {
     resetButton.addEventListener("click", resetFilters);
   }
 
-  // Open Add Modal
   if (addButton) {
     addButton.addEventListener("click", openAddModal);
   }
 
-  // Close Add Modal
   if (closeAddButton) {
     closeAddButton.addEventListener("click", closeAddModal);
   }
@@ -786,7 +765,6 @@ document.addEventListener("DOMContentLoaded", function() {
     cancelAddButton.addEventListener("click", closeAddModal);
   }
 
-  // Click outside Add Modal
   if (addModal) {
     addModal.addEventListener("click", function(event) {
       if (event.target === addModal) {
@@ -795,19 +773,17 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Add Income / Expense
-  addTypeButtons.forEach(function(button) {
+  for (let i = 0; i < addTypeButtons.length; i++) {
+    const button = addTypeButtons[i];
     button.addEventListener("click", function() {
       setAddType(button.dataset.type);
     });
-  });
+  }
 
-  // Add Form
   if (addForm) {
     addForm.addEventListener("submit", addTransaction);
   }
 
-  // Close Edit Modal
   if (closeEditButton) {
     closeEditButton.addEventListener("click", closeEditModal);
   }
@@ -816,7 +792,6 @@ document.addEventListener("DOMContentLoaded", function() {
     cancelEditButton.addEventListener("click", closeEditModal);
   }
 
-  // Click outside Edit Modal
   if (editModal) {
     editModal.addEventListener("click", function(event) {
       if (event.target === editModal) {
@@ -825,21 +800,19 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Change Income / Expense in Edit
-  editType.forEach(function(radio) {
+  for (let i = 0; i < editType.length; i++) {
+    const radio = editType[i];
     radio.addEventListener("change", function() {
       if (radio.checked) {
         fillCategories(editCategory, radio.value);
       }
     });
-  });
+  }
 
-  // Edit Form
   if (editForm) {
     editForm.addEventListener("submit", saveEdit);
   }
 
-  // ESC key closes modals
   document.addEventListener("keydown", function(event) {
     if (event.key === "Escape") {
       if (editModal && editModal.classList.contains("active")) {
@@ -851,6 +824,5 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
 
-  // Show user's transactions
   displayTransactions();
 });

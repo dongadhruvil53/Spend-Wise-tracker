@@ -1,9 +1,3 @@
-/* ==========================================================================
-   SpendWise - Modern Expense Tracker
-   File: css/register.css (Register Page Styles)
-   ========================================================================== */
-
-/* Full-height centered auth layout */
 .auth-wrapper {
   min-height: 100vh;
   display: flex;
@@ -20,7 +14,6 @@
   margin: 0 auto;
 }
 
-/* Auth Card */
 .auth-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -30,7 +23,6 @@
   transition: transform var(--transition-normal), box-shadow var(--transition-normal);
 }
 
-/* Header & Branding */
 .auth-header {
   text-align: center;
   margin-bottom: 2rem;
@@ -66,7 +58,6 @@
   line-height: 1.5;
 }
 
-/* Alert Notification Boxes (Inline in Card) */
 .auth-alert {
   display: flex;
   align-items: flex-start;
@@ -96,7 +87,6 @@
   margin-top: 2px;
 }
 
-/* Password field with toggle visibility button */
 .input-password-wrapper {
   position: relative;
 }
@@ -123,14 +113,12 @@
   padding-right: 2.75rem;
 }
 
-/* Form Helper Text & Password Requirements */
 .form-helper {
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 0.35rem;
 }
 
-/* Password match hint */
 .match-indicator {
   font-size: 0.75rem;
   margin-top: 0.35rem;
@@ -147,7 +135,6 @@
   color: var(--danger-text);
 }
 
-/* Auth Card Footer */
 .auth-footer {
   margin-top: 1.75rem;
   text-align: center;
@@ -166,7 +153,6 @@
   text-decoration: underline;
 }
 
-/* Page Bottom Copyright */
 .auth-page-footer {
   margin-top: 2rem;
   text-align: center;
@@ -185,7 +171,6 @@
   }
 }
 
-/* Mobile responsive adjustments */
 @media (max-width: 480px) {
   .auth-card {
     padding: 1.75rem 1.25rem;

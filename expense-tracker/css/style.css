@@ -1,13 +1,5 @@
-/* ==========================================================================
-   SpendWise - Modern Expense Tracker
-   File: style.css (Core Stylesheet)
-   ========================================================================== */
-
-/* --------------------------------------------------------------------------
-   1. CSS Variables & Theme Configuration
-   -------------------------------------------------------------------------- */
 :root {
-  /* Color Palette */
+
   --primary: #4f46e5;
   --primary-hover: #4338ca;
   --primary-light: #eef2ff;
@@ -32,7 +24,6 @@
   --info: #0284c7;
   --info-light: #f0f9ff;
 
-  /* Neutral Shades */
   --bg-body: #f8fafc;
   --bg-card: #ffffff;
   --bg-card-subtle: #f1f5f9;
@@ -44,31 +35,24 @@
   --border-color: #e2e8f0;
   --border-focus: #818cf8;
 
-  /* Shadows */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
   --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
   --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
   --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
 
-  /* Border Radii */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-xl: 20px;
   --radius-pill: 9999px;
 
-  /* Transitions */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
 
-  /* Typography */
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* --------------------------------------------------------------------------
-   2. Reset & Base Styles
-   -------------------------------------------------------------------------- */
 *,
 *::before,
 *::after {
@@ -118,9 +102,6 @@ a {
   text-decoration: none;
 }
 
-/* --------------------------------------------------------------------------
-   3. Layout & Container
-   -------------------------------------------------------------------------- */
 .container {
   width: 100%;
   max-width: 1200px;
@@ -136,9 +117,6 @@ a {
   padding-bottom: 3.5rem;
 }
 
-/* --------------------------------------------------------------------------
-   4. Navigation Bar
-   -------------------------------------------------------------------------- */
 .navbar {
   background-color: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
@@ -255,9 +233,6 @@ a {
   white-space: nowrap;
 }
 
-/* --------------------------------------------------------------------------
-   5. Buttons
-   -------------------------------------------------------------------------- */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -343,9 +318,6 @@ a {
   background-color: var(--primary-light);
 }
 
-/* --------------------------------------------------------------------------
-   6. Page Header Banner
-   -------------------------------------------------------------------------- */
 .page-header {
   display: flex;
   align-items: center;
@@ -374,9 +346,6 @@ a {
   gap: 0.75rem;
 }
 
-/* --------------------------------------------------------------------------
-   7. Dashboard Cards Grid (4 Summary Cards)
-   -------------------------------------------------------------------------- */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -491,9 +460,6 @@ a {
   color: var(--text-muted);
 }
 
-/* --------------------------------------------------------------------------
-   8. Main Section Layout (Two Columns)
-   -------------------------------------------------------------------------- */
 .dashboard-layout {
   display: grid;
   grid-template-columns: 1fr 1.35fr;
@@ -501,7 +467,6 @@ a {
   align-items: start;
 }
 
-/* Cards */
 .card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -539,9 +504,6 @@ a {
   padding: 1.5rem;
 }
 
-/* --------------------------------------------------------------------------
-   9. Forms & Inputs
-   -------------------------------------------------------------------------- */
 .form-group {
   margin-bottom: 1.25rem;
 }
@@ -602,7 +564,6 @@ a {
   gap: 1rem;
 }
 
-/* Custom Type Toggle Button Group (Income / Expense) */
 .type-toggle-group {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -638,9 +599,6 @@ a {
   box-shadow: var(--shadow-xs);
 }
 
-/* --------------------------------------------------------------------------
-   10. Spending Analytics / Progress Bar
-   -------------------------------------------------------------------------- */
 .analytics-meter {
   margin-bottom: 1.5rem;
 }
@@ -700,9 +658,6 @@ a {
   transition: width var(--transition-normal);
 }
 
-/* --------------------------------------------------------------------------
-   11. Transaction Items & Badges
-   -------------------------------------------------------------------------- */
 .badge-category {
   display: inline-flex;
   align-items: center;
@@ -748,7 +703,6 @@ a {
   font-weight: 700;
 }
 
-/* Transaction List (Widget on Dashboard) */
 .transaction-list-widget {
   list-style: none;
   display: flex;
@@ -822,9 +776,6 @@ a {
   white-space: nowrap;
 }
 
-/* --------------------------------------------------------------------------
-   12. Filter & Search Toolbar (Transactions Page)
-   -------------------------------------------------------------------------- */
 .filter-toolbar {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -857,7 +808,6 @@ a {
   flex-wrap: wrap;
 }
 
-/* Segmented Buttons for Filter Tabs (All / Income / Expense) */
 .filter-tabs {
   display: inline-flex;
   background-color: var(--bg-card-subtle);
@@ -905,9 +855,6 @@ a {
   border-color: var(--border-focus);
 }
 
-/* --------------------------------------------------------------------------
-   13. Data Table (Transactions Page)
-   -------------------------------------------------------------------------- */
 .table-responsive {
   width: 100%;
   overflow-x: auto;
@@ -961,7 +908,6 @@ a {
   gap: 0.35rem;
 }
 
-/* Table Footer / Summary bar */
 .table-footer-bar {
   padding: 1rem 1.25rem;
   border-top: 1px solid var(--border-color);
@@ -973,9 +919,6 @@ a {
   color: var(--text-muted);
 }
 
-/* --------------------------------------------------------------------------
-   14. Empty State
-   -------------------------------------------------------------------------- */
 .empty-state {
   text-align: center;
   padding: 3rem 1.5rem;
@@ -1002,9 +945,6 @@ a {
   margin: 0 auto 1.25rem;
 }
 
-/* --------------------------------------------------------------------------
-   15. Modal Dialogs (Add / Edit / Confirm)
-   -------------------------------------------------------------------------- */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1089,9 +1029,6 @@ a {
   gap: 0.75rem;
 }
 
-/* --------------------------------------------------------------------------
-   16. Toast Notifications
-   -------------------------------------------------------------------------- */
 .toast-container {
   position: fixed;
   bottom: 1.5rem;
@@ -1138,9 +1075,6 @@ a {
   border-left: 4px solid var(--primary);
 }
 
-/* --------------------------------------------------------------------------
-   17. Footer
-   -------------------------------------------------------------------------- */
 .footer {
   background-color: var(--bg-card);
   border-top: 1px solid var(--border-color);

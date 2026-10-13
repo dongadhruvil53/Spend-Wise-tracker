@@ -1,24 +1,7 @@
-/**
- * ==============================================================================
- * SpendWise - Expense Tracker Application
- * File: js/main.js
- * Description: Main JavaScript file for the Dashboard page.
- *              Handles user authentication check, multi-user transactions,
- *              dashboard calculations, recent transactions, quick add form,
- *              and LocalStorage synchronization.
- * ==============================================================================
- */
-
-// ==============================================================================
-// 1. CONSTANTS & INITIAL DATA
-// ==============================================================================
-
-// Storage keys specified by SpendWise requirements
 const STORAGE_KEY = "spendwise_transactions";
 const USERS_STORAGE_KEY = "spendwise_users";
 const CURRENT_USER_KEY = "spendwise_current_user";
 
-// Predefined categories for Income and Expense
 const CATEGORIES = {
   income: [
     "Salary",
@@ -43,7 +26,6 @@ const CATEGORIES = {
   ],
 };
 
-// Default sample transactions tagged with default user ID 101
 const SAMPLE_TRANSACTIONS = [
   {
     id: "tx_sample_1",
@@ -107,12 +89,8 @@ const SAMPLE_TRANSACTIONS = [
   },
 ];
 
-// Active transaction ID being edited (null when not editing)
 let currentEditId = null;
 
-// ==============================================================================
-// 2. DOM ELEMENT REFERENCES
-// ==============================================================================
 const totalBalanceEl = document.getElementById("total-balance");
 const totalIncomeEl = document.getElementById("total-income");
 const totalExpenseEl = document.getElementById("total-expense");
@@ -122,7 +100,6 @@ const balanceBadgeEl = document.getElementById("balance-status-badge");
 const recentListEl = document.getElementById("recent-transactions-list");
 const emptyRecentEl = document.getElementById("empty-recent-state");
 
-// Quick Add Form Elements
 const transactionForm = document.getElementById("transaction-form");
 const txTitleInput = document.getElementById("tx-title");
 const txAmountInput = document.getElementById("tx-amount");
@@ -131,13 +108,11 @@ const txDateInput = document.getElementById("tx-date");
 const txNotesInput = document.getElementById("tx-notes");
 const typeToggleButtons = document.querySelectorAll(".type-toggle-btn");
 
-// Analytics Breakdown Elements
 const incomeExpenseMeter = document.getElementById("income-expense-meter");
 const incomeRatioText = document.getElementById("income-ratio-text");
 const expenseRatioText = document.getElementById("expense-ratio-text");
 const categoryBreakdownContainer = document.getElementById("category-breakdown-list");
 
-// Edit Modal Elements
 const editModal = document.getElementById("edit-modal");
 const editForm = document.getElementById("edit-transaction-form");
 const editIdInput = document.getElementById("edit-tx-id");
@@ -150,34 +125,19 @@ const editNotesInput = document.getElementById("edit-tx-notes");
 const closeEditModalBtn = document.getElementById("close-edit-modal");
 const cancelEditBtn = document.getElementById("cancel-edit-btn");
 
-// Toast Container & Clear Data Button
 const toastContainer = document.getElementById("toast-container");
 const clearAllDataBtn = document.getElementById("clear-all-data-btn");
 
-// Navbar User Profile & Logout Elements
 const navUserName = document.getElementById("nav-user-name");
 const navUserAvatar = document.getElementById("user-avatar");
 const logoutBtn = document.getElementById("logout-btn");
 
-// Current selected type in Quick Add form ('income' or 'expense')
 let selectedFormType = "expense";
 
-// ==============================================================================
-// 3. AUTHENTICATION & SESSION MANAGEMENT
-// ==============================================================================
-
-/**
- * Retrieves the currently logged-in user's ID
- * @returns {string|null}
- */
 function getCurrentUserId() {
   return localStorage.getItem(CURRENT_USER_KEY);
 }
 
-/**
- * Retrieves the full user record from LocalStorage for the current session
- * @returns {Object|null}
- */
 function getCurrentUser() {
   const currentUserId = getCurrentUserId();
   if (!currentUserId) return null;
@@ -187,17 +147,18 @@ function getCurrentUser() {
 
   try {
     const users = JSON.parse(usersData);
-    return users.find((u) => String(u.id) === String(currentUserId)) || null;
+    for (let i = 0; i < users.length; i++) {
+      if (String(users[i].id) === String(currentUserId)) {
+        return users[i];
+      }
+    }
+    return null;
   } catch (error) {
     console.error("Error reading users:", error);
     return null;
   }
 }
 
-/**
- * Enforces Login Protection. If user is not authenticated, redirects to login.html.
- * @returns {Object|null} The authenticated user object
- */
 function checkAuthAndRedirect() {
   const user = getCurrentUser();
   if (!user) {
@@ -208,10 +169,6 @@ function checkAuthAndRedirect() {
   return user;
 }
 
-/**
- * Updates navbar with current user's name and avatar initials
- * @param {Object} user
- */
 function updateNavbar(user) {
   if (!user) return;
 
@@ -224,17 +181,10 @@ function updateNavbar(user) {
   }
 }
 
-/**
- * Logs out user, removes current session, and redirects to Login page
- */
 function handleLogout() {
   localStorage.removeItem(CURRENT_USER_KEY);
   window.location.href = "login.html?logout=true";
 }
-
-// ==============================================================================
-// 4. USER-WISE LOCAL STORAGE FUNCTIONS
-// ==============================================================================
 
 /**
  * Returns all transactions stored in LocalStorage across all users.
@@ -244,15 +194,19 @@ function handleLogout() {
 function getAllTransactionsFromStorage() {
   const data = localStorage.getItem(STORAGE_KEY);
   if (!data) {
-    // Initialize sample transactions for default user 101 on first run
     localStorage.setItem(STORAGE_KEY, JSON.stringify(SAMPLE_TRANSACTIONS));
-    return [...SAMPLE_TRANSACTIONS];
+    return SAMPLE_TRANSACTIONS;
   }
 
   try {
-    return JSON.parse(data) || [];
+    const transactions = JSON.parse(data);
+    if (Array.isArray(transactions)) {
+      return transactions;
+    }
+    throw new Error("Saved transactions are not a list.");
   } catch (error) {
     console.error("Error reading LocalStorage transactions:", error);
+    showToast("Could not read saved transactions.", "danger");
     return [];
   }
 }
@@ -266,33 +220,26 @@ function getUserTransactions() {
   if (!currentUserId) return [];
 
   const allTransactions = getAllTransactionsFromStorage();
-  return allTransactions.filter(
-    (tx) => String(tx.userId) === String(currentUserId)
-  );
+  const userTransactions = [];
+  for (let i = 0; i < allTransactions.length; i++) {
+    if (String(allTransactions[i].userId) === String(currentUserId)) {
+      userTransactions.push(allTransactions[i]);
+    }
+  }
+  return userTransactions;
 }
 
-/**
- * Saves all transactions back to LocalStorage
- * @param {Array} transactions
- */
 function saveAllTransactionsToStorage(transactions) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+    return true;
   } catch (error) {
     console.error("Error saving transactions:", error);
     showToast("Failed to save data to LocalStorage!", "danger");
+    return false;
   }
 }
 
-// ==============================================================================
-// 5. FORMATTING UTILITIES
-// ==============================================================================
-
-/**
- * Formats a numeric value into a clean currency string (e.g. $1,250.00)
- * @param {number} amount
- * @returns {string}
- */
 function formatCurrency(amount) {
   const absoluteAmount = Math.abs(Number(amount) || 0);
   const formatted = absoluteAmount.toLocaleString("en-US", {
@@ -302,11 +249,6 @@ function formatCurrency(amount) {
   return `$${formatted}`;
 }
 
-/**
- * Formats a date string (YYYY-MM-DD) into readable format (e.g. "Oct 4, 2026")
- * @param {string} dateString
- * @returns {string}
- */
 function formatDate(dateString) {
   if (!dateString) return "";
   const parts = dateString.split("-");
@@ -323,10 +265,6 @@ function formatDate(dateString) {
   });
 }
 
-/**
- * Returns today's date formatted as YYYY-MM-DD for date inputs
- * @returns {string}
- */
 function getTodayDateString() {
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -335,23 +273,10 @@ function getTodayDateString() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-/**
- * Generates a unique ID for new transactions
- * @returns {string}
- */
 function generateUniqueId() {
   return "tx_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
 }
 
-// ==============================================================================
-// 6. TOAST NOTIFICATIONS
-// ==============================================================================
-
-/**
- * Displays a non-intrusive floating toast notification
- * @param {string} message - Message to show
- * @param {'success'|'danger'|'info'} type - Toast type styling
- */
 function showToast(message, type = "success") {
   if (!toastContainer) return;
 
@@ -384,27 +309,19 @@ function showToast(message, type = "success") {
   }, 3000);
 }
 
-// ==============================================================================
-// 7. DASHBOARD CALCULATIONS & METRICS (USER-WISE)
-// ==============================================================================
-
-/**
- * Recalculates Total Balance, Total Income, Total Expense, and Count
- * and updates the dashboard metric cards for the logged-in user.
- * @param {Array} userTransactions
- */
 function updateDashboardMetrics(userTransactions) {
   let income = 0;
   let expense = 0;
 
-  userTransactions.forEach((tx) => {
+  for (let i = 0; i < userTransactions.length; i++) {
+    const tx = userTransactions[i];
     const val = parseFloat(tx.amount) || 0;
     if (tx.type === "income") {
       income += val;
     } else if (tx.type === "expense") {
       expense += val;
     }
-  });
+  }
 
   const balance = income - expense;
   const count = userTransactions.length;
@@ -440,11 +357,6 @@ function updateDashboardMetrics(userTransactions) {
   updateCategoryBreakdown(userTransactions, expense);
 }
 
-/**
- * Updates the Income vs Expense progress bar
- * @param {number} income
- * @param {number} expense
- */
 function updateAnalyticsMeter(income, expense) {
   if (!incomeExpenseMeter) return;
 
@@ -462,29 +374,37 @@ function updateAnalyticsMeter(income, expense) {
   if (expenseRatioText) expenseRatioText.textContent = `Expense: ${expensePct}%`;
 }
 
-/**
- * Computes category breakdown for expenses for the current user
- * @param {Array} userTransactions
- * @param {number} totalExpense
- */
 function updateCategoryBreakdown(userTransactions, totalExpense) {
   if (!categoryBreakdownContainer) return;
 
   const expenseByCategory = {};
-  userTransactions
-    .filter((tx) => tx.type === "expense")
-    .forEach((tx) => {
-      const cat = tx.category || "Other Expense";
-      expenseByCategory[cat] = (expenseByCategory[cat] || 0) + (parseFloat(tx.amount) || 0);
-    });
+  for (let i = 0; i < userTransactions.length; i++) {
+    const transaction = userTransactions[i];
+    if (transaction.type === "expense") {
+      const category = transaction.category || "Other Expense";
+      const amount = parseFloat(transaction.amount) || 0;
 
-  const sortedCategories = Object.keys(expenseByCategory)
-    .map((cat) => ({
-      name: cat,
-      amount: expenseByCategory[cat],
-      percent: totalExpense > 0 ? Math.round((expenseByCategory[cat] / totalExpense) * 100) : 0,
-    }))
-    .sort((a, b) => b.amount - a.amount);
+      if (!expenseByCategory[category]) {
+        expenseByCategory[category] = 0;
+      }
+      expenseByCategory[category] += amount;
+    }
+  }
+
+  const sortedCategories = [];
+  for (const category in expenseByCategory) {
+    sortedCategories.push({
+      name: category,
+      amount: expenseByCategory[category],
+      percent: totalExpense > 0
+        ? Math.round((expenseByCategory[category] / totalExpense) * 100)
+        : 0,
+    });
+  }
+
+  sortedCategories.sort(function (first, second) {
+    return second.amount - first.amount;
+  });
 
   categoryBreakdownContainer.innerHTML = "";
 
@@ -496,7 +416,8 @@ function updateCategoryBreakdown(userTransactions, totalExpense) {
     return;
   }
 
-  sortedCategories.slice(0, 4).forEach((cat) => {
+  for (let i = 0; i < sortedCategories.length && i < 4; i++) {
+    const cat = sortedCategories[i];
     const item = document.createElement("div");
     item.className = "category-bar-item";
     item.innerHTML = `
@@ -509,17 +430,9 @@ function updateCategoryBreakdown(userTransactions, totalExpense) {
       </div>
     `;
     categoryBreakdownContainer.appendChild(item);
-  });
+  }
 }
 
-// ==============================================================================
-// 8. RENDER RECENT TRANSACTIONS (USER-WISE)
-// ==============================================================================
-
-/**
- * Renders the most recent 5 transactions for the current user
- * @param {Array} userTransactions
- */
 function renderRecentTransactions(userTransactions) {
   if (!recentListEl) return;
 
@@ -532,10 +445,13 @@ function renderRecentTransactions(userTransactions) {
 
   if (emptyRecentEl) emptyRecentEl.style.display = "none";
 
-  const sorted = [...userTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-  const recent = sorted.slice(0, 5);
+  const sorted = userTransactions.slice();
+  sorted.sort(function (first, second) {
+    return new Date(second.date) - new Date(first.date);
+  });
 
-  recent.forEach((tx) => {
+  for (let i = 0; i < sorted.length && i < 5; i++) {
+    const tx = sorted[i];
     const isIncome = tx.type === "income";
     const amountSign = isIncome ? "+" : "-";
     const amountClass = isIncome ? "amount-positive" : "amount-negative";
@@ -564,33 +480,24 @@ function renderRecentTransactions(userTransactions) {
       <div class="tx-right">
         <span class="tx-amount ${amountClass}">${amountSign} ${formatCurrency(tx.amount)}</span>
         <button class="btn-icon btn-icon-edit" title="Edit Transaction" onclick="openEditModal('${tx.id}')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          ✏️
         </button>
         <button class="btn-icon btn-icon-danger" title="Delete Transaction" onclick="deleteTransaction('${tx.id}')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          🗑️
         </button>
       </div>
     `;
     recentListEl.appendChild(li);
-  });
+  }
 }
 
-// ==============================================================================
-// 9. CATEGORY DROPDOWN POPULATION
-// ==============================================================================
-
-/**
- * Fills category options into a select element based on type
- * @param {HTMLSelectElement} selectElement
- * @param {'income'|'expense'} type
- * @param {string|null} selectedValue
- */
 function populateCategorySelect(selectElement, type, selectedValue = null) {
   if (!selectElement) return;
   selectElement.innerHTML = "";
 
   const list = CATEGORIES[type] || [];
-  list.forEach((categoryName) => {
+  for (let i = 0; i < list.length; i++) {
+    const categoryName = list[i];
     const opt = document.createElement("option");
     opt.value = categoryName;
     opt.textContent = categoryName;
@@ -598,27 +505,20 @@ function populateCategorySelect(selectElement, type, selectedValue = null) {
       opt.selected = true;
     }
     selectElement.appendChild(opt);
-  });
+  }
 }
 
-// ==============================================================================
-// 10. FORM INTERACTIONS & ADD TRANSACTION
-// ==============================================================================
-
-/**
- * Switches the selected type in the quick add form
- * @param {'income'|'expense'} type
- */
 function setFormType(type) {
   selectedFormType = type;
 
-  typeToggleButtons.forEach((btn) => {
+  for (let i = 0; i < typeToggleButtons.length; i++) {
+    const btn = typeToggleButtons[i];
     if (btn.dataset.type === type) {
       btn.classList.add("active");
     } else {
       btn.classList.remove("active");
     }
-  });
+  }
 
   populateCategorySelect(txCategorySelect, selectedFormType);
 }
@@ -643,7 +543,6 @@ function handleAddTransaction(e) {
   const date = txDateInput.value || getTodayDateString();
   const notes = txNotesInput ? txNotesInput.value.trim() : "";
 
-  // Validation
   if (!title) {
     showToast("Please enter a transaction title.", "danger");
     txTitleInput.focus();
@@ -661,7 +560,6 @@ function handleAddTransaction(e) {
     return;
   }
 
-  // Create new transaction stamped with current user's userId
   const newTransaction = {
     id: generateUniqueId(),
     userId: Number(currentUserId) || currentUserId,
@@ -673,25 +571,18 @@ function handleAddTransaction(e) {
     notes: notes,
   };
 
-  // Prepend to all transactions in LocalStorage
   const allTransactions = getAllTransactionsFromStorage();
   allTransactions.unshift(newTransaction);
-  saveAllTransactionsToStorage(allTransactions);
+  if (!saveAllTransactionsToStorage(allTransactions)) return;
 
-  // Refresh dashboard views
   refreshDashboard();
 
-  // Reset form fields
   transactionForm.reset();
   setFormType("expense");
   if (txDateInput) txDateInput.value = getTodayDateString();
 
   showToast(`Transaction "${title}" added successfully!`, "success");
 }
-
-// ==============================================================================
-// 11. EDIT TRANSACTION MODAL (USER-WISE)
-// ==============================================================================
 
 /**
  * Opens edit modal with pre-filled transaction data.
@@ -701,9 +592,14 @@ function handleAddTransaction(e) {
 window.openEditModal = function (id) {
   const currentUserId = getCurrentUserId();
   const userTransactions = getUserTransactions();
-  const tx = userTransactions.find(
-    (item) => item.id === id && String(item.userId) === String(currentUserId)
-  );
+  let tx = null;
+  for (let i = 0; i < userTransactions.length; i++) {
+    if (userTransactions[i].id === id
+      && String(userTransactions[i].userId) === String(currentUserId)) {
+      tx = userTransactions[i];
+      break;
+    }
+  }
 
   if (!tx) {
     showToast("Transaction not found or access denied.", "danger");
@@ -717,18 +613,16 @@ window.openEditModal = function (id) {
   editDateInput.value = tx.date;
   if (editNotesInput) editNotesInput.value = tx.notes || "";
 
-  editTypeInputs.forEach((radio) => {
+  for (let i = 0; i < editTypeInputs.length; i++) {
+    const radio = editTypeInputs[i];
     radio.checked = radio.value === tx.type;
-  });
+  }
 
   populateCategorySelect(editCategorySelect, tx.type, tx.category);
 
   editModal.classList.add("active");
 };
 
-/**
- * Closes the edit modal and resets edit state
- */
 function closeEditModal() {
   if (editModal) editModal.classList.remove("active");
   currentEditId = null;
@@ -749,9 +643,10 @@ function handleSaveEdit(e) {
   const title = editTitleInput.value.trim();
   const amount = parseFloat(editAmountInput.value);
   let selectedType = "expense";
-  editTypeInputs.forEach((radio) => {
+  for (let i = 0; i < editTypeInputs.length; i++) {
+    const radio = editTypeInputs[i];
     if (radio.checked) selectedType = radio.value;
-  });
+  }
   const category = editCategorySelect.value;
   const date = editDateInput.value || getTodayDateString();
   const notes = editNotesInput ? editNotesInput.value.trim() : "";
@@ -766,9 +661,14 @@ function handleSaveEdit(e) {
   }
 
   const allTransactions = getAllTransactionsFromStorage();
-  const index = allTransactions.findIndex(
-    (tx) => tx.id === currentEditId && String(tx.userId) === String(currentUserId)
-  );
+  let index = -1;
+  for (let i = 0; i < allTransactions.length; i++) {
+    if (allTransactions[i].id === currentEditId
+      && String(allTransactions[i].userId) === String(currentUserId)) {
+      index = i;
+      break;
+    }
+  }
 
   if (index === -1) {
     showToast("Could not find transaction to update.", "danger");
@@ -776,25 +676,18 @@ function handleSaveEdit(e) {
     return;
   }
 
-  allTransactions[index] = {
-    ...allTransactions[index],
-    title: title,
-    amount: amount,
-    type: selectedType,
-    category: category,
-    date: date,
-    notes: notes,
-  };
+  allTransactions[index].title = title;
+  allTransactions[index].amount = amount;
+  allTransactions[index].type = selectedType;
+  allTransactions[index].category = category;
+  allTransactions[index].date = date;
+  allTransactions[index].notes = notes;
 
-  saveAllTransactionsToStorage(allTransactions);
+  if (!saveAllTransactionsToStorage(allTransactions)) return;
   closeEditModal();
   refreshDashboard();
   showToast("Transaction updated successfully!", "success");
 }
-
-// ==============================================================================
-// 12. DELETE TRANSACTION (USER-WISE)
-// ==============================================================================
 
 /**
  * Deletes a transaction by ID after confirmation.
@@ -805,9 +698,14 @@ function handleSaveEdit(e) {
 window.deleteTransaction = function (id) {
   const currentUserId = getCurrentUserId();
   const userTransactions = getUserTransactions();
-  const tx = userTransactions.find(
-    (item) => item.id === id && String(item.userId) === String(currentUserId)
-  );
+  let tx = null;
+  for (let i = 0; i < userTransactions.length; i++) {
+    if (userTransactions[i].id === id
+      && String(userTransactions[i].userId) === String(currentUserId)) {
+      tx = userTransactions[i];
+      break;
+    }
+  }
 
   if (!tx) {
     showToast("Transaction not found or access denied.", "danger");
@@ -819,18 +717,19 @@ window.deleteTransaction = function (id) {
   if (!confirmDelete) return;
 
   const allTransactions = getAllTransactionsFromStorage();
-  const updatedTransactions = allTransactions.filter(
-    (item) => !(item.id === id && String(item.userId) === String(currentUserId))
-  );
+  const updatedTransactions = [];
+  for (let i = 0; i < allTransactions.length; i++) {
+    const transaction = allTransactions[i];
+    const belongsToUser = String(transaction.userId) === String(currentUserId);
+    if (transaction.id !== id || !belongsToUser) {
+      updatedTransactions.push(transaction);
+    }
+  }
 
-  saveAllTransactionsToStorage(updatedTransactions);
+  if (!saveAllTransactionsToStorage(updatedTransactions)) return;
   refreshDashboard();
   showToast("Transaction deleted.", "danger");
 };
-
-// ==============================================================================
-// 13. CLEAR ALL DATA / RESET (USER-WISE)
-// ==============================================================================
 
 /**
  * Resets sample data for the current user without touching other users' data
@@ -844,26 +743,33 @@ function handleClearAllData() {
   const currentUserId = getCurrentUserId();
   const allTransactions = getAllTransactionsFromStorage();
 
-  // Keep other users' transactions
-  const otherUsersTransactions = allTransactions.filter(
-    (tx) => String(tx.userId) !== String(currentUserId)
-  );
+  const otherUsersTransactions = [];
+  for (let i = 0; i < allTransactions.length; i++) {
+    if (String(allTransactions[i].userId) !== String(currentUserId)) {
+      otherUsersTransactions.push(allTransactions[i]);
+    }
+  }
 
-  // Re-seed sample data with this user's userId
-  const userSamples = SAMPLE_TRANSACTIONS.map((sample, index) => ({
-    ...sample,
-    id: `tx_sample_${currentUserId}_${index + 1}_${Date.now()}`,
-    userId: Number(currentUserId) || currentUserId,
-  }));
+  const userSamples = [];
+  for (let i = 0; i < SAMPLE_TRANSACTIONS.length; i++) {
+    const sample = SAMPLE_TRANSACTIONS[i];
+    userSamples.push({
+      id: `tx_sample_${currentUserId}_${i + 1}_${Date.now()}`,
+      userId: Number(currentUserId) || currentUserId,
+      title: sample.title,
+      amount: sample.amount,
+      type: sample.type,
+      category: sample.category,
+      date: sample.date,
+      notes: sample.notes,
+    });
+  }
 
-  saveAllTransactionsToStorage([...userSamples, ...otherUsersTransactions]);
+  const resetTransactions = userSamples.concat(otherUsersTransactions);
+  if (!saveAllTransactionsToStorage(resetTransactions)) return;
   refreshDashboard();
   showToast("Account data reset to default samples.", "info");
 }
-
-// ==============================================================================
-// 14. SECURITY / HTML ESCAPING
-// ==============================================================================
 
 /**
  * Sanitizes strings before rendering in HTML to prevent XSS issues
@@ -880,51 +786,35 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
-// ==============================================================================
-// 15. REFRESH DASHBOARD (USER-WISE)
-// ==============================================================================
-
-/**
- * Reads only the logged-in user's transactions and updates dashboard metrics
- */
 function refreshDashboard() {
   const userTransactions = getUserTransactions();
   updateDashboardMetrics(userTransactions);
   renderRecentTransactions(userTransactions);
 }
 
-// ==============================================================================
-// 16. INITIALIZATION & EVENT LISTENERS
-// ==============================================================================
-
 document.addEventListener("DOMContentLoaded", () => {
-  // Enforce Login Protection immediately on page load
+
   const user = checkAuthAndRedirect();
   if (!user) return;
 
-  // Display user profile in navbar
   updateNavbar(user);
 
-  // Set default date to today in quick add form
   if (txDateInput) txDateInput.value = getTodayDateString();
 
-  // Populate initial categories for the default 'expense' type
   populateCategorySelect(txCategorySelect, selectedFormType);
 
-  // Type toggle button listeners (Income / Expense) in Quick Add
-  typeToggleButtons.forEach((btn) => {
+  for (let i = 0; i < typeToggleButtons.length; i++) {
+    const btn = typeToggleButtons[i];
     btn.addEventListener("click", () => {
       const type = btn.dataset.type;
       setFormType(type);
     });
-  });
+  }
 
-  // Listen to form submit for Add Transaction
   if (transactionForm) {
     transactionForm.addEventListener("submit", handleAddTransaction);
   }
 
-  // Edit Modal Event Listeners
   if (closeEditModalBtn) {
     closeEditModalBtn.addEventListener("click", closeEditModal);
   }
@@ -937,37 +827,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Edit type radio changes update category options dynamically
-  editTypeInputs.forEach((radio) => {
+  for (let i = 0; i < editTypeInputs.length; i++) {
+    const radio = editTypeInputs[i];
     radio.addEventListener("change", (e) => {
       if (e.target.checked) {
         populateCategorySelect(editCategorySelect, e.target.value);
       }
     });
-  });
+  }
 
-  // Edit form submission
   if (editForm) {
     editForm.addEventListener("submit", handleSaveEdit);
   }
 
-  // Clear / Reset Data button
   if (clearAllDataBtn) {
     clearAllDataBtn.addEventListener("click", handleClearAllData);
   }
 
-  // Logout button listener
   if (logoutBtn) {
     logoutBtn.addEventListener("click", handleLogout);
   }
 
-  // Keyboard shortcut: ESC closes modal
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && editModal && editModal.classList.contains("active")) {
       closeEditModal();
     }
   });
 
-  // Initial dashboard load with current user's data
   refreshDashboard();
 });

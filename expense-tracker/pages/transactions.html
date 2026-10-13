@@ -7,7 +7,6 @@
   <title>All Transactions | SpendWise</title>
   <link rel="icon" type="image/svg+xml" href="../assets/images/logo.svg">
 
-  <!-- Login Protection: Redirect if user is not logged in -->
   <script>
     (function () {
       const currentUser = localStorage.getItem("spendwise_current_user");
@@ -17,16 +16,12 @@
     })();
   </script>
 
-  <!-- CSS Stylesheets -->
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/responsive.css">
 </head>
 
 <body>
 
-  <!-- ========================================================================
-       Navigation Bar
-       ======================================================================== -->
   <header class="navbar">
     <div class="container">
       <a href="../index.html" class="nav-brand">
@@ -65,7 +60,7 @@
       </nav>
 
       <div class="nav-actions">
-        <!-- Logged-in User Profile Badge -->
+
         <div class="nav-user-profile" id="nav-user-profile" title="Logged in user">
           <div class="user-avatar" id="user-avatar">U</div>
           <span class="user-name" id="nav-user-name">User</span>
@@ -79,7 +74,6 @@
           <span>Add Transaction</span>
         </button>
 
-        <!-- Logout Button -->
         <button id="logout-btn" class="btn btn-danger btn-sm" title="Log out of SpendWise">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -92,13 +86,9 @@
     </div>
   </header>
 
-  <!-- ========================================================================
-       Main Content
-       ======================================================================== -->
   <main class="main-content">
     <div class="container">
 
-      <!-- Page Header -->
       <section class="page-header">
         <div class="page-title-group">
           <h1>Transaction History</h1>
@@ -114,11 +104,9 @@
         </div>
       </section>
 
-      <!-- Search & Multi-Criteria Filter Toolbar -->
       <section class="filter-toolbar">
         <div class="filter-toolbar-top">
 
-          <!-- Search Input -->
           <div class="filter-search-box input-with-icon">
             <span class="input-icon">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -135,7 +123,6 @@
             </button>
           </div>
 
-          <!-- Type Filter Tabs (All / Income / Expense) -->
           <div class="filter-tabs">
             <button type="button" class="filter-tab-btn active" data-type="all">All</button>
             <button type="button" class="filter-tab-btn type-income" data-type="income">Income</button>
@@ -146,7 +133,6 @@
 
         <div class="filter-controls-group">
 
-          <!-- Category Filter Dropdown -->
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <label for="filter-category" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-muted);">
               Category:
@@ -156,7 +142,6 @@
             </select>
           </div>
 
-          <!-- Sort Order Dropdown -->
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <label for="filter-sort" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-muted);">
               Sort By:
@@ -169,7 +154,6 @@
             </select>
           </div>
 
-          <!-- Reset Filter Button -->
           <button id="reset-filters-btn" type="button" class="btn btn-secondary btn-sm"
             title="Reset all search and filter conditions">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -181,7 +165,6 @@
         </div>
       </section>
 
-      <!-- Transactions Table Wrapper -->
       <section id="table-wrapper" class="table-responsive">
         <table class="data-table mobile-table-card-view">
           <thead>
@@ -195,18 +178,16 @@
             </tr>
           </thead>
           <tbody id="transactions-table-body">
-            <!-- Dynamically populated via transactions.js -->
+
           </tbody>
         </table>
 
-        <!-- Empty State (Shown when no items match filters or list is empty) -->
         <div id="empty-transactions-state" class="empty-state" style="display: none;">
           <img src="../assets/images/empty-illustration.svg" alt="No transactions found">
           <h3>No transactions found</h3>
           <p>Try clearing your search query or changing your filters to find what you are looking for.</p>
         </div>
 
-        <!-- Table Summary / Footer -->
         <div class="table-footer-bar">
           <div id="tx-count-summary">Showing 0 of 0 transactions</div>
           <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -219,17 +200,11 @@
     </div>
   </main>
 
-  <!-- ========================================================================
-       Edit Transaction Modal
-       ======================================================================== -->
   <div id="edit-modal" class="modal-overlay">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3 class="modal-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 20h9"></path>
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-          </svg>
+          <span aria-hidden="true">✏️</span>
           <span>Edit Transaction</span>
         </h3>
         <button type="button" class="modal-close-btn" id="close-edit-modal" aria-label="Close modal">
@@ -244,7 +219,7 @@
         <input type="hidden" id="edit-tx-id">
 
         <div class="modal-body">
-          <!-- Type Radio Selector -->
+
           <div class="form-group">
             <label class="form-label">Type</label>
             <div style="display: flex; gap: 1.5rem;">
@@ -257,13 +232,11 @@
             </div>
           </div>
 
-          <!-- Title -->
           <div class="form-group">
             <label for="edit-tx-title" class="form-label">Transaction Title <span class="required">*</span></label>
             <input type="text" id="edit-tx-title" class="form-control" required>
           </div>
 
-          <!-- Amount & Category -->
           <div class="form-row">
             <div class="form-group">
               <label for="edit-tx-amount" class="form-label">Amount ($) <span class="required">*</span></label>
@@ -276,7 +249,6 @@
             </div>
           </div>
 
-          <!-- Date & Notes -->
           <div class="form-row">
             <div class="form-group">
               <label for="edit-tx-date" class="form-label">Date <span class="required">*</span></label>
@@ -298,9 +270,6 @@
     </div>
   </div>
 
-  <!-- ========================================================================
-       Add Transaction Modal (For Quick Adding directly from Transactions page)
-       ======================================================================== -->
   <div id="add-modal" class="modal-overlay">
     <div class="modal-dialog">
       <div class="modal-header">
@@ -323,7 +292,6 @@
       <form id="add-transaction-form">
         <div class="modal-body">
 
-          <!-- Type Toggle Group -->
           <div class="form-group">
             <label class="form-label">Transaction Type</label>
             <div class="type-toggle-group">
@@ -336,14 +304,12 @@
             </div>
           </div>
 
-          <!-- Title -->
           <div class="form-group">
             <label for="add-tx-title" class="form-label">Transaction Title <span class="required">*</span></label>
             <input type="text" id="add-tx-title" class="form-control" placeholder="e.g. Electricity bill, Bonus"
               required>
           </div>
 
-          <!-- Amount & Category -->
           <div class="form-row">
             <div class="form-group">
               <label for="add-tx-amount" class="form-label">Amount ($) <span class="required">*</span></label>
@@ -357,7 +323,6 @@
             </div>
           </div>
 
-          <!-- Date & Notes -->
           <div class="form-row">
             <div class="form-group">
               <label for="add-tx-date" class="form-label">Date <span class="required">*</span></label>
@@ -380,10 +345,8 @@
     </div>
   </div>
 
-  <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="container">
       <div>
@@ -395,7 +358,6 @@
     </div>
   </footer>
 
-  <!-- Transactions JavaScript File -->
   <script src="../js/transactions.js"></script>
 </body>
 

@@ -1,21 +1,5 @@
-/**
- * ==============================================================================
- * SpendWise - Expense Tracker Application
- * File: js/register.js
- * Description: Handles user account registration, input validation, duplicate
- *              email verification, and LocalStorage persistence.
- * ==============================================================================
- */
-
-// ==============================================================================
-// 1. CONSTANTS & KEYS
-// ==============================================================================
 const USERS_STORAGE_KEY = "spendwise_users";
-const CURRENT_USER_KEY = "spendwise_current_user";
 
-// ==============================================================================
-// 2. DOM ELEMENT REFERENCES
-// ==============================================================================
 const registerForm = document.getElementById("register-form");
 const nameInput = document.getElementById("reg-name");
 const emailInput = document.getElementById("reg-email");
@@ -31,14 +15,6 @@ const togglePasswordBtn = document.getElementById("toggle-reg-password");
 const toggleConfirmBtn = document.getElementById("toggle-reg-confirm");
 const toastContainer = document.getElementById("toast-container");
 
-// ==============================================================================
-// 3. STORAGE HELPERS
-// ==============================================================================
-
-/**
- * Returns all registered users from LocalStorage.
- * @returns {Array} List of user objects
- */
 function getUsersFromStorage() {
   const data = localStorage.getItem(USERS_STORAGE_KEY);
   if (!data) return [];
@@ -51,55 +27,43 @@ function getUsersFromStorage() {
   }
 }
 
-/**
- * Saves all users to LocalStorage
- * @param {Array} users
- */
 function saveUsersToStorage(users) {
   try {
     localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    return true;
   } catch (error) {
     console.error("Error saving users to LocalStorage:", error);
+    return false;
   }
 }
 
-/**
- * Generates a clean numeric ID for the new user (e.g. 101, 102, 103)
- * @param {Array} users
- * @returns {number}
- */
 function generateNextUserId(users) {
   if (!users || users.length === 0) return 101;
-  const ids = users.map((u) => Number(u.id) || 100);
-  return Math.max(...ids) + 1;
+  let highestId = 100;
+  for (let i = 0; i < users.length; i++) {
+    const userId = Number(users[i].id) || 100;
+    if (userId > highestId) {
+      highestId = userId;
+    }
+  }
+  return highestId + 1;
 }
 
-// ==============================================================================
-// 4. UI NOTIFICATIONS & HELPERS
-// ==============================================================================
-
-/**
- * Shows an inline error message
- * @param {string} message
- */
 function showError(message) {
   if (!errorAlert || !errorText) return;
   errorText.textContent = message;
   errorAlert.style.display = "flex";
 }
 
-/**
- * Hides the inline error message
- */
 function hideError() {
   if (errorAlert) errorAlert.style.display = "none";
 }
 
-/**
- * Floating toast notification
- * @param {string} message
- * @param {'success'|'danger'|'info'} type
- */
+function showFieldError(message, input) {
+  showError(message);
+  input.focus();
+}
+
 function showToast(message, type = "success") {
   if (!toastContainer) return;
 
@@ -116,9 +80,6 @@ function showToast(message, type = "success") {
   }, 3000);
 }
 
-/**
- * Updates the visual password matching helper indicator
- */
 function checkPasswordMatch() {
   if (!matchIndicator) return;
 
@@ -146,14 +107,6 @@ function checkPasswordMatch() {
   }
 }
 
-// ==============================================================================
-// 5. REGISTRATION SUBMISSION HANDLER
-// ==============================================================================
-
-/**
- * Handles the registration form submission
- * @param {Event} e
- */
 function handleRegister(e) {
   e.preventDefault();
   hideError();
@@ -163,72 +116,65 @@ function handleRegister(e) {
   const password = passwordInput.value;
   const confirmPassword = confirmPasswordInput.value;
 
-  // 1. Validate Full Name
   if (!name) {
-    showError("Please enter your full name.");
-    nameInput.focus();
+    showFieldError("Please enter your full name.", nameInput);
     return;
   }
 
   if (name.length < 2) {
-    showError("Full name must be at least 2 characters long.");
-    nameInput.focus();
+    showFieldError("Full name must be at least 2 characters long.", nameInput);
     return;
   }
 
-  // 2. Validate Email
   if (!email) {
-    showError("Please enter your email address.");
-    emailInput.focus();
+    showFieldError("Please enter your email address.", emailInput);
     return;
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    showError("Please provide a valid email address (e.g. name@example.com).");
-    emailInput.focus();
+    showFieldError("Please provide a valid email address (e.g. name@example.com).", emailInput);
     return;
   }
 
-  // 3. Validate Password Length
   if (!password) {
-    showError("Please enter a password.");
-    passwordInput.focus();
+    showFieldError("Please enter a password.", passwordInput);
     return;
   }
 
   if (password.length < 6) {
-    showError("Password must be at least 6 characters long.");
-    passwordInput.focus();
+    showFieldError("Password must be at least 6 characters long.", passwordInput);
     return;
   }
 
-  // 4. Validate Confirm Password Match
   if (!confirmPassword) {
-    showError("Please confirm your password.");
-    confirmPasswordInput.focus();
+    showFieldError("Please confirm your password.", confirmPasswordInput);
     return;
   }
 
   if (password !== confirmPassword) {
-    showError("Passwords do not match. Please re-enter identical passwords.");
-    confirmPasswordInput.focus();
+    showFieldError("Passwords do not match. Please re-enter identical passwords.", confirmPasswordInput);
     return;
   }
 
-  // 5. Check for duplicate email in LocalStorage
   const existingUsers = getUsersFromStorage();
-  const emailExists = existingUsers.some(
-    (u) => u.email && u.email.toLowerCase() === email.toLowerCase()
-  );
+  let emailExists = false;
+  for (let i = 0; i < existingUsers.length; i++) {
+    if (existingUsers[i].email
+      && existingUsers[i].email.toLowerCase() === email.toLowerCase()) {
+      emailExists = true;
+      break;
+    }
+  }
 
   if (emailExists) {
-    showError(`An account with the email "${email}" already exists. Please sign in instead.`);
-    emailInput.focus();
+    showFieldError(
+      `An account with the email "${email}" already exists. Please sign in instead.`,
+      emailInput
+    );
     return;
   }
 
-  // 6. Create new user object
   const newUserId = generateNextUserId(existingUsers);
   const newUser = {
     id: newUserId,
@@ -238,11 +184,12 @@ function handleRegister(e) {
     createdAt: new Date().toISOString(),
   };
 
-  // 7. Save to LocalStorage
   existingUsers.push(newUser);
-  saveUsersToStorage(existingUsers);
+  if (!saveUsersToStorage(existingUsers)) {
+    showError("Could not save your account. Please check your browser storage and try again.");
+    return;
+  }
 
-  // Disable button while redirecting
   if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = `<span>Creating account...</span>`;
@@ -250,49 +197,41 @@ function handleRegister(e) {
 
   showToast("Account created successfully! Redirecting to login...", "success");
 
-  // 8. Redirect to Login page
   setTimeout(() => {
     window.location.href = "login.html?registered=true";
   }, 600);
 }
 
-// ==============================================================================
-// 6. INITIALIZATION & EVENT LISTENERS
-// ==============================================================================
+function togglePasswordVisibility(button, input) {
+  const isPassword = input.type === "password";
+  input.type = isPassword ? "text" : "password";
+
+  if (isPassword) {
+    button.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+  } else {
+    button.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+  }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Listen for registration form submit
   if (registerForm) {
     registerForm.addEventListener("submit", handleRegister);
   }
 
-  // Real-time password match check
   if (passwordInput && confirmPasswordInput) {
     passwordInput.addEventListener("input", checkPasswordMatch);
     confirmPasswordInput.addEventListener("input", checkPasswordMatch);
   }
 
-  // Toggle Password Visibility
   if (togglePasswordBtn && passwordInput) {
     togglePasswordBtn.addEventListener("click", () => {
-      const isPassword = passwordInput.getAttribute("type") === "password";
-      passwordInput.setAttribute("type", isPassword ? "text" : "password");
-
-      togglePasswordBtn.innerHTML = isPassword
-        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`
-        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+      togglePasswordVisibility(togglePasswordBtn, passwordInput);
     });
   }
 
-  // Toggle Confirm Password Visibility
   if (toggleConfirmBtn && confirmPasswordInput) {
     toggleConfirmBtn.addEventListener("click", () => {
-      const isPassword = confirmPasswordInput.getAttribute("type") === "password";
-      confirmPasswordInput.setAttribute("type", isPassword ? "text" : "password");
-
-      toggleConfirmBtn.innerHTML = isPassword
-        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`
-        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+      togglePasswordVisibility(toggleConfirmBtn, confirmPasswordInput);
     });
   }
 });

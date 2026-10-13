@@ -1,91 +1,59 @@
-# SpendWise - Modern Vanilla JS Expense Tracker
+# SpendWise Tracker
 
-A modern, clean, responsive, and beginner-friendly personal finance and expense tracking web application built strictly with **HTML5, CSS3, and Vanilla JavaScript**.
+SpendWise is a small expense tracker made with HTML, CSS, and plain JavaScript. It has no build step or extra JavaScript libraries.
 
----
+## Features
 
-## 🌟 Features
+- Add, edit, and delete income and expense transactions.
+- Search transactions by title, note, or category. Filter by type or category and sort by date or amount.
+- See income, expenses, balance, transaction count, recent transactions, and spending by category.
+- Keep separate transaction lists for each local account and save them in the browser.
+- Use the same responsive layout on desktop, tablet, and mobile.
 
-### 1. Dashboard
-- **Total Balance**: Live net cash flow (Income - Expenses) with positive/deficit status indicator.
-- **Total Income**: Sum of all logged income sources with green up-trend badge.
-- **Total Expense**: Sum of all logged expenditures with red down-trend badge.
-- **Transaction Count**: Real-time counter of total saved transactions.
-- **Cash Flow Ratio & Analytics**: Visual progress bar showing Income vs. Expense ratio and top spending category breakdown bars.
-- **Recent Transactions Widget**: Displays the latest 5 transactions with quick Edit and Delete actions.
+## Files and folders
 
-### 2. Add Transaction
-- Title / Description
-- Amount (positive number validation with step `0.01`)
-- Type selection (Income vs Expense)
-- Dynamic Category selector tailored to the chosen type:
-  - **Income Categories**: Salary, Freelance, Investments, Business, Rental Income, Gift, Other Income
-  - **Expense Categories**: Food & Dining, Shopping, Housing & Rent, Transportation, Utilities, Entertainment, Health & Medical, Education, Personal Care, Other Expense
-- Date picker (defaults automatically to today's date)
-- Optional Notes field
-- Instant validation and non-intrusive toast notifications
+- `index.html` at the repository root sends the browser to the SpendWise app.
+- `expense-tracker/index.html` is the dashboard page.
+- `expense-tracker/login.html` and `expense-tracker/register.html` contain the sign-in and registration forms.
+- `expense-tracker/pages/transactions.html` is the searchable transaction list.
+- `expense-tracker/css/style.css` contains shared layout and component styles.
+- `expense-tracker/css/responsive.css` adjusts the layout for smaller screens.
+- `expense-tracker/css/login.css` and `expense-tracker/css/register.css` contain styles used only on those forms.
+- `expense-tracker/js/main.js` loads dashboard data, calculates totals, and handles dashboard actions.
+- `expense-tracker/js/transactions.js` handles the transaction list, search, filters, sorting, and its add/edit/delete forms.
+- `expense-tracker/js/login.js` and `expense-tracker/js/register.js` handle the account forms.
+- `expense-tracker/assets/images/` contains the logo and empty-list illustration.
 
-### 3. Transaction Management (`pages/transactions.html`)
-- **Full History**: Tabular view of all historical entries.
-- **Live Search**: Instant real-time search across titles, categories, and notes.
-- **Multi-Filter**:
-  - Filter by Type: All / Income / Expense
-  - Filter by Category: Any specific category
-- **Sorting**:
-  - Date (Newest first / Oldest first)
-  - Amount (Highest first / Lowest first)
-- **Edit & Delete**: Full modal editing and confirmation-protected deletion.
-- **Add from List**: Dedicated "+ Add Transaction" modal directly on the transactions page.
-- **Summary Metrics**: Shows live count of filtered entries and filtered net sum.
+Each JavaScript page file gets the elements it needs with DOM selectors, then uses event listeners to respond to form submissions and button clicks. The functions are grouped by page to make it easier to follow each feature.
 
-### 4. LocalStorage Persistence
-- Saves all transactions in browser `localStorage`.
-- Data remains intact across page refreshes and browser restarts.
-- Auto-initializes with realistic sample transactions on first launch.
-- Provides a "Reset Samples" button for instant testing.
+## How totals are calculated
 
-### 5. Responsive & Clean UI
-- **Desktop**: Multi-column dashboard grid and clean data table.
-- **Tablet**: Adaptive 2x2 grid and stacked cards.
-- **Mobile**: Converts data table rows into native card views (`data-label` CSS mapping) for optimal readability without horizontal scrolling.
+The dashboard goes through the current account's transactions and adds each income amount to **Total Income** and each expense amount to **Total Expense**. It then calculates:
 
----
-
-## 📂 Folder Structure
-
-```
-expense-tracker/
-│
-├── index.html                   # Dashboard Page
-│
-├── pages/
-│   └── transactions.html        # Transactions List & Filter Page
-│
-├── css/
-│   ├── style.css                # Base, layout, component & theme styles
-│   └── responsive.css           # Tablet and mobile responsive styles
-│
-├── js/
-│   ├── main.js                  # Dashboard logic, metrics, and storage
-│   └── transactions.js          # Search, filter, sorting, and table logic
-│
-└── assets/
-    └── images/
-        ├── logo.svg             # Application logo icon
-        └── empty-illustration.svg # Zero-state SVG artwork
+```text
+Balance = Total Income - Total Expense
 ```
 
----
+The transaction page uses the same rule for its filtered list, so its net total changes when the search or filters change. Category totals add together the expenses that have the same category.
 
-## 🚀 How to Run
+## How browser storage works
 
-No build step or Node.js server is required! Simply open either:
-- `expense-tracker/index.html` directly in any web browser (Chrome, Edge, Firefox, Safari).
-- Or run a local HTTP server:
-  ```bash
-  # Using Python (built-in)
-  python -m http.server 8000
+The app saves JSON text in `localStorage`:
 
-  # Or using VS Code Live Server extension
-  ```
-  Then navigate to `http://localhost:8000/expense-tracker/`.
+- `spendwise_users` stores the locally registered account records.
+- `spendwise_current_user` stores the ID of the signed-in account.
+- `spendwise_transactions` stores transactions for all accounts. Each transaction has a `userId`, so pages show and change only the signed-in user's transactions.
+
+When a page opens, its JavaScript reads the saved text and converts it back into a JavaScript list with `JSON.parse()`. After adding, editing, deleting, or resetting transactions, it converts the list to text with `JSON.stringify()` and saves it again. The demo sample transactions and the demo login are existing conveniences in this project.
+
+This is a browser-only learning project, not secure account storage. LocalStorage data can be viewed or changed by the person using the browser; do not use real passwords or sensitive financial data with it.
+
+## Run the project
+
+Open `expense-tracker/index.html` in a browser, or start a local server from the repository folder:
+
+```text
+python -m http.server 8000
+```
+
+Then visit `http://localhost:8000/expense-tracker/`.
